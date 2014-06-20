@@ -1,3 +1,18 @@
+/*
+ * Code for using an old hard disk motor as a rotary encoder.
+ *
+ * This project is inspired by and originally based on the rotary encoder project
+ * by Franck Fleurey which can be found here:
+ *
+ * http://www.fleurey.com/franck/pmwiki.php?n=Main.HDDEncoder
+ *
+ * The intention of this project is a little different from the original approach,
+ * though. The ATtiny running this code is supposed to output a pulse on one of two
+ * output pins (PB3/PB4) whenever an increment or decrement has been detected. These
+ * output pins are in turn monitored by another MCU, so you could call this a rotary
+ * encoder driver board for interfacing an MCU with an HDD motor.
+ */
+
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
