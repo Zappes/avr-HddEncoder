@@ -16,6 +16,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 
 // the output ports on which a pulse will be sent for when the encoder increments or decrements
 #define OUT_DEC PB3
@@ -26,16 +27,20 @@
 
 // the output pulse width in milliseconds
 #define PULSE_WIDTH 2
+#define PULSE_DISTANCE 1
 
-void pulse_outout(uint8_t port) {
+void pulse_out(uint8_t port) {
 	PORTB |= _BV(port);
 	_delay_ms(PULSE_WIDTH);
 	PORTB &= ~_BV(port);
-	_delay_ms(PULSE_WIDTH);
+	_delay_ms(PULSE_DISTANCE);
 }
 
 int main(void)
 {
+	// ADC off
+	ADCSRA &= ~_BV(ADEN);
+
 	// set LED pins to output
 	DDRB |= _BV(PB3) | _BV(PB4);
 	PORTB &= ~(_BV(PB3) | _BV(PB4));
@@ -49,7 +54,9 @@ int main(void)
 	sei();
 
 	while(1) {
-		// read_encoder in the interrupt routine, do nothing here.
+		// we make the MCU sleep in order to consume less power - round about 1.45mA instead of 2.15mA in my test setup.
+		set_sleep_mode(SLEEP_MODE_IDLE);
+		sleep_mode();
 	}
 
 	return 0;
@@ -67,7 +74,7 @@ ISR(INT0_vect) {
 		if(direction == DIR_DOWN) {
 			pulses++;
 			if(pulses >= SMOOTH_COUNT) {
-				pulse_outout(OUT_DEC);
+				pulse_out(OUT_DEC);
 				pulses = 0;
 			}
 		} else {
@@ -79,7 +86,7 @@ ISR(INT0_vect) {
 		if(direction == DIR_UP) {
 			pulses++;
 			if(pulses >= SMOOTH_COUNT) {
-				pulse_outout(OUT_INC);
+				pulse_out(OUT_INC);
 				pulses = 0;
 			}
 		} else {
